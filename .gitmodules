@@ -1,0 +1,3 @@
+[submodule "Assets/Crane-ML-AssetsStore"]
+	path = Assets/Crane-ML-AssetsStore
+	url = git@github.com:MizoTake/Crane-ML-AssetsStore.git
