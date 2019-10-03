@@ -21,6 +21,7 @@ namespace CranML
         private void Bind()
         {
             // TODO: 初期値からの移動場所
+            // TODO: 移動制限(Clampとかで)
             
             leftButton.Button.OnClickAsObservable()
                 .TakeUntilDestroy(this)
