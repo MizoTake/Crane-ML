@@ -1,6 +1,8 @@
-﻿using DG.Tweening;
+﻿using System;
+using System.Threading;
 using Doozy.Engine.UI;
 using UniRx;
+using UniRx.Async;
 using UnityEngine;
 
 namespace CranML
@@ -8,34 +10,60 @@ namespace CranML
     public class CraneGamePresenter : MonoBehaviour
     {
 
-        [SerializeField] private UIButton leftButton;
-        [SerializeField] private UIButton forwardButton;
-        [SerializeField] private Transform arm;
+        [SerializeField] private CraneGameView view;
         [SerializeField] private Animator armAnim;
-        
-        void Start()
+
+        private CancellationTokenSource horizontalCancellation = new CancellationTokenSource();
+        private CancellationTokenSource verticalCancellation = new CancellationTokenSource();
+
+        private bool firstButonPressed = false;
+
+        private void Start()
         {
-            Bind();
+            view.HorizontalButton.OnClickAsObservable()
+                .Where(_ => !firstButonPressed)
+                .TakeUntilDestroy(this)
+                .Subscribe(_ => firstButonPressed = true);
+
+            view.VerticalButton.OnClickAsObservable()
+                .Where(_ => firstButonPressed)
+                .TakeUntilDestroy(this)
+                .Subscribe(_ =>
+                {
+                    armAnim.CrossFade("Open", 0.5f);
+                });
+        }
+        
+        public void HorizontalButtonPressed()
+        {
+            view.HorizontalButtonUp = false;
+            view.Move(Vector3.back * 0.005f, horizontalCancellation.Token).Forget();
+        }
+        
+        public void HorizontalButtonUp()
+        {
+            horizontalCancellation.Cancel();
+            horizontalCancellation = new CancellationTokenSource();
+            view.HorizontalButtonUp = true;
         }
 
-        private void Bind()
+        public void VerticalButtonPressed()
         {
-            // TODO: 初期値からの移動場所
-            // TODO: 移動制限(Clampとかで)
-            
-            leftButton.Button.OnClickAsObservable()
-                .TakeUntilDestroy(this)
-                .Subscribe(_ =>
-                {
-                    arm.DOMoveX(arm.transform.position.x + 0.01f, 0.1f);
-                });
-            
-            forwardButton.Button.OnClickAsObservable()
-                .TakeUntilDestroy(this)
-                .Subscribe(_ =>
-                {
-                    arm.DOMoveZ(arm.transform.position.z + 0.01f, 0.1f);
-                });
+            view.VerticalButtonUp = false;
+            view.Move(Vector3.left * 0.005f, verticalCancellation.Token).Forget();
+        }
+        
+        public void VerticalButtonUp()
+        {
+            verticalCancellation.Cancel();
+            verticalCancellation = new CancellationTokenSource();
+            view.VerticalButtonUp = true;
+        }
+
+        private void OnDestroy()
+        {
+            horizontalCancellation.Cancel();
+            verticalCancellation.Cancel();
         }
     }
 }
