@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using DG.Tweening;
 using Doozy.Engine.UI;
 using UniRx;
 using UniRx.Async;
@@ -30,7 +31,7 @@ namespace CranML
                 .TakeUntilDestroy(this)
                 .Subscribe(_ =>
                 {
-                    armAnim.CrossFade("Open", 0.5f);
+                    view.ArmOpen();
                 });
         }
         

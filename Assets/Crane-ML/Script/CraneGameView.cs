@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using DG.Tweening;
 using Doozy.Engine.UI;
 using UniRx.Async;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace CranML
     {
         
         [SerializeField] private Transform arm;
+        [SerializeField] private Animator armAnimation;
         [SerializeField] private UIButton horizontalUIButton;
         [SerializeField] private UIButton verticalUIButton;
         
@@ -30,6 +32,19 @@ namespace CranML
                 arm.transform.Translate(moveVector);
                 await UniTask.Delay(TimeSpan.FromSeconds(Time.deltaTime), cancellationToken: token);
             }
+        }
+
+        public void ArmOpen()
+        {
+            
+            DOTween.Sequence()
+                .Append(arm.transform.DOMoveY(-0.5f, 3f).SetRelative().SetEase(Ease.InQuad))
+                .AppendInterval(0.5f)
+                // animation speedを変える
+                .AppendCallback(() => armAnimation.CrossFade("Use", 0.5f))
+                .AppendInterval(0.5f)
+                .Append(arm.transform.DOMoveY(0.5f, 3f).SetRelative().SetEase(Ease.OutQuad))
+                .Play();
         }
     }
 }
