@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using CraneML;
 using CraneML.Extensions;
 using DG.Tweening;
 using Doozy.Engine.UI;
@@ -12,7 +13,7 @@ namespace CranML
     public class CraneGameView : MonoBehaviour
     {
         
-        [SerializeField] private Transform arm;
+        [SerializeField] private CranActor arm;
         [SerializeField] private Animator armAnimation;
         [SerializeField] private UIButton horizontalUIButton;
         [SerializeField] private UIButton verticalUIButton;
@@ -30,7 +31,7 @@ namespace CranML
 
         private void Start()
         {
-            armInitPosition = arm.position;
+            armInitPosition = arm.transform.position;
         }
 
         public async UniTask MoveTo(Vector3 inputVector, CancellationToken token)
@@ -44,12 +45,13 @@ namespace CranML
 
         public async UniTask ArmOpen()
         {
-            armAnimation.speed = 0.2f;
+//            armAnimation.speed = 0.2f;
             await DOTween.Sequence()
-                .Append(arm.transform.DOMoveY(-1f, 3f).SetRelative().SetEase(Ease.InQuad))
+                .AppendCallback(() => armAnimation.enabled = false)
+                .Append(arm.Open())
+                .Append(arm.Down())
                 .AppendInterval(0.5f)
-                // animation speedを変える
-//                .AppendCallback(() => armAnimation.CrossFade("Use", 0.5f))
+                .Append(arm.Catch())
                 .AppendInterval(1f)
                 .Append(arm.transform.DOMoveY(1f, 3f).SetRelative().SetEase(Ease.OutQuad))
                 .Play();
@@ -59,8 +61,9 @@ namespace CranML
         {
             await DOTween.Sequence()
                 .AppendInterval(1f)
-                .Append(arm.DOMoveZ(armInitPosition.z, 3f))
-                .Append(arm.DOMoveX(armInitPosition.x, 3f))
+                .Append(arm.transform.DOMoveZ(armInitPosition.z, 3f))
+                .Append(arm.transform.DOMoveX(armInitPosition.x, 3f))
+                .AppendCallback(() => armAnimation.CrossFade("Open", 0.5f))
                 .Play();
         }
     }
