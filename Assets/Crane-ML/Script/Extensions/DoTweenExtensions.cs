@@ -7,7 +7,7 @@ namespace CraneML.Extensions
     {
         public struct TweenAwaiter : System.Runtime.CompilerServices.ICriticalNotifyCompletion
         {
-            Tween tween;
+            readonly Tween tween;
 
             public TweenAwaiter(Tween tween) => this.tween = tween;
 

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading;
-using DG.Tweening;
-using Doozy.Engine.UI;
+﻿using System.Threading;
+using CraneML.Extensions;
 using UniRx;
 using UniRx.Async;
 using UnityEngine;
@@ -12,7 +10,6 @@ namespace CranML
     {
 
         [SerializeField] private CraneGameView view;
-        [SerializeField] private Animator armAnim;
 
         private CancellationTokenSource horizontalCancellation = new CancellationTokenSource();
         private CancellationTokenSource verticalCancellation = new CancellationTokenSource();
@@ -29,16 +26,17 @@ namespace CranML
             view.VerticalButton.OnClickAsObservable()
                 .Where(_ => firstButonPressed)
                 .TakeUntilDestroy(this)
-                .Subscribe(_ =>
+                .Subscribe(async _ =>
                 {
-                    view.ArmOpen();
+                    await view.ArmOpen();
+                    await view.ReturnPosition();
                 });
         }
         
         public void HorizontalButtonPressed()
         {
             view.HorizontalButtonUp = false;
-            view.Move(Vector3.back * 0.005f, horizontalCancellation.Token).Forget();
+            view.MoveTo(Vector3.back * 0.005f, horizontalCancellation.Token).Forget();
         }
         
         public void HorizontalButtonUp()
@@ -51,7 +49,7 @@ namespace CranML
         public void VerticalButtonPressed()
         {
             view.VerticalButtonUp = false;
-            view.Move(Vector3.left * 0.005f, verticalCancellation.Token).Forget();
+            view.MoveTo(Vector3.left * 0.005f, verticalCancellation.Token).Forget();
         }
         
         public void VerticalButtonUp()
